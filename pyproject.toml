@@ -1,0 +1,31 @@
+[project]
+name = "sdkfabric-{{name}}"
+version = "0.1.0"
+authors = [
+  { name="Christoph Kappestein", email="christoph.kappestein@gmail.com" },
+]
+description = "{{repo_description}}"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development :: Code Generators",
+]
+dependencies = [
+    "sdkgen-client"
+]
+
+[project.urls]
+Homepage = "https://github.com/sdk-fabric/{{repo_name}}"
+Issues = "https://github.com/sdk-fabric/{{repo_name}}/issues"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["sdk"]
+package-dir = {"" = "src"}

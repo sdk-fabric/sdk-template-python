@@ -1,0 +1,8 @@
+{
+  "type": "client-python",
+  "require": {
+    "sdkfabric/{{name}}": {
+      "target": "./src/sdk"
+    }
+  }
+}
