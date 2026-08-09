@@ -1,10 +1,10 @@
 [project]
-name = "sdkfabric-{{name}}"
+name = "{{name}}"
 version = "0.1.0"
 authors = [
   { name="Christoph Kappestein", email="christoph.kappestein@gmail.com" },
 ]
-description = "{{repo_description}}"
+description = "{{description}}"
 readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "MIT"}
@@ -19,8 +19,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/sdk-fabric/{{repo_name}}"
-Issues = "https://github.com/sdk-fabric/{{repo_name}}/issues"
+Homepage = "{{github_url}}"
+Issues = "{{github_url}}/issues"
 
 [build-system]
 requires = ["setuptools>=61.0"]

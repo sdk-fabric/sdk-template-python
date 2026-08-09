@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Syncs boilerplate wrapper files from a template directory into the root repository,
 
-replacing JSON metadata placeholders dynamically and validating that no unhandled
-placeholders remain.
+replacing JSON metadata placeholders dynamically (including {{key:json}} modifiers)
+and validating that no unhandled placeholders remain.
 """
 
 import argparse
@@ -13,8 +13,8 @@ import shutil
 import sys
 from pathlib import Path
 
-# Matches remaining {{placeholder_name}} patterns after replacement
-PLACEHOLDER_PATTERN = re.compile(r"\{\{([a-zA-Z0-9_]+)\}\}")
+# Matches remaining {{placeholder_name}} or {{placeholder_name:modifier}} patterns
+PLACEHOLDER_PATTERN = re.compile(r"\{\{([a-zA-Z0-9_]+(?::[a-zA-Z0-9_]+)?)\}\}")
 
 
 def is_binary(file_path: Path) -> bool:
@@ -29,12 +29,12 @@ def is_binary(file_path: Path) -> bool:
 
 def load_replacements(config_path: Path) -> dict[str, str]:
     """Parse JSON metadata and GitHub environment variables into placeholder mappings."""
-    data = {}
+    raw_data = {}
 
     # 1. Load local .sdk-fabric.json if available
     if config_path.is_file():
         with open(config_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
+            raw_data = json.load(f)
 
     # 2. Inject environment metadata automatically if running in GitHub Actions
     server_url = os.getenv("GITHUB_SERVER_URL", "https://github.com")
@@ -43,16 +43,26 @@ def load_replacements(config_path: Path) -> dict[str, str]:
     if repo_slug and "/" in repo_slug:
         user_name, repo_name = repo_slug.split("/", 1)
 
-        # Set variables using setdefault (won't overwrite if explicitly defined in .sdk-fabric.json)
-        data.setdefault("github_user", user_name)        # e.g. "sdk-fabric"
-        data.setdefault("github_repository", repo_name)  # e.g. "petstore-java"
-        data.setdefault("github_url", f"{server_url}/{repo_slug}")  # e.g. "https://github.com/sdk-fabric/petstore-java"
+        raw_data.setdefault("github_user", user_name)
+        raw_data.setdefault("github_repository", repo_name)
+        raw_data.setdefault("github_url", f"{server_url}/{repo_slug}")
 
-    return {
-        f"{{{{{key}}}}}": str(val)
-        for key, val in data.items()
-        if not isinstance(val, (dict, list))
-    }
+    replacements = {}
+    for key, val in raw_data.items():
+        if isinstance(val, (dict, list)):
+            continue
+
+        str_val = str(val)
+
+        # 1. Standard plain text replacement: {{key}}
+        replacements[f"{{{{{key}}}}}"] = str_val
+
+        # 2. JSON-escaped string literal replacement: {{key:json}}
+        # json.dumps("val")[1:-1] strips the surrounding quotes created by json.dumps()
+        escaped_json_val = json.dumps(str_val)[1:-1]
+        replacements[f"{{{{{key}:json}}}}}"] = escaped_json_val
+
+    return replacements
 
 
 def main() -> None:
@@ -100,11 +110,11 @@ def main() -> None:
             try:
                 content = src_file.read_text(encoding="utf-8")
 
-                # Replace all known {{key}} placeholders
+                # Replace all known {{key}} and {{key:json}} placeholders
                 for placeholder, value in replacements.items():
                     content = content.replace(placeholder, value)
 
-                # Check if any unhandled {{key}} placeholders remain
+                # Check if any unhandled {{key}} or {{key:json}} placeholders remain
                 unhandled_matches = set(PLACEHOLDER_PATTERN.findall(content))
                 if unhandled_matches:
                     missing_keys = ", ".join(f"'{{{{{m}}}}}'" for m in sorted(unhandled_matches))
