@@ -14,7 +14,7 @@ jobs:
       - name: Checkout Central Template Repository
         uses: actions/checkout@v4
         with:
-          repository: sdk-fabric/sdk-template-java
+          repository: sdk-fabric/sdk-template-python
           ref: main
           path: .template_tmp
       - name: Set up Python
