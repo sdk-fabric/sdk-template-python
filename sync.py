@@ -54,13 +54,8 @@ def load_replacements(config_path: Path) -> dict[str, str]:
 
         str_val = str(val)
 
-        # 1. Standard plain text replacement: {{key}}
-        replacements[f"{{{{{key}}}}}"] = str_val
-
-        # 2. JSON-escaped string literal replacement: {{key:json}}
-        # json.dumps("val")[1:-1] strips the surrounding quotes created by json.dumps()
-        escaped_json_val = json.dumps(str_val)[1:-1]
-        replacements[f"{{{{{key}:json}}}}}"] = escaped_json_val
+        replacements["{{" + key + "}}"] = str_val
+        replacements["{{" + key + ":json}}"] = json.dumps(str_val)[1:-1]
 
     return replacements
 
@@ -96,8 +91,12 @@ def main() -> None:
 
         rel_path = src_file.relative_to(template_dir)
 
-        # Skip ignored directories or files
+        # Skip ignored root entries
         if any(part in ignored_parts for part in rel_path.parts):
+            continue
+
+        # Skip everything under .github/workflows specifically
+        if len(rel_path.parts) >= 2 and rel_path.parts[0] == ".github" and rel_path.parts[1] == "workflows":
             continue
 
         dest_file = Path(rel_path)
