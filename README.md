@@ -1,22 +1,13 @@
 
-# {{display_name}} SDK
+# {{github_repository}}
 
-This SDK is managed by the [SDK Fabric](https://sdk-fabric.org/) project.
-Our goal is to build a global infrastructure to automatically generate
-an SDK for every API, please take a look at our website for more information.
+This [SDK]({{github_url}}) is managed by the [SDK Fabric](https://sdk-fabric.org/) project, a global infrastructure to
+automatically generate SDKs for every API.
 
-## Contribution
-
-Please do not create a pull requests at this repository since the code is
-automatically generated. If an operation or type is missing at the client SDK
-please register at the [TypeHub](https://typehub.cloud/) platform and create
-a pull request at the [{{display_name}}](https://app.typehub.cloud/d/sdkfabric/{{name}})
-specification. The system will then automatically create a GIT commit and update
-the code.
+You can find more information about this SDK at [TypeHub](https://typehub.cloud/):
+https://app.typehub.cloud/d/{{typehub_user}}/{{typehub_document}}
 
 ## Usage
-
-The following example shows how you initialize the client:
 
 ```python
 from sdk.client import Client
@@ -25,6 +16,3 @@ client = Client.build("[access_token]")
 
 // @TODO use the client
 ```
-
-You can find all available operations and types at:
-https://app.typehub.cloud/d/sdkfabric/{{name}}
