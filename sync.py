@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Syncs boilerplate wrapper files from a template directory into the root repository,
 
-replacing JSON metadata placeholders dynamically (including {{key:json}} modifiers)
-and validating that no unhandled placeholders remain.
+replacing JSON metadata placeholders dynamically (including {{key:json}} modifiers,
+and dynamic usage snippets generated via readme.py) and validating that no unhandled
+placeholders remain.
 """
 
 import argparse
@@ -12,6 +13,9 @@ import re
 import shutil
 import sys
 from pathlib import Path
+
+# Import the README usage generator from readme.py
+from readme import generate_usage
 
 # Matches remaining {{placeholder_name}} or {{placeholder_name:modifier}} patterns
 PLACEHOLDER_PATTERN = re.compile(r"\{\{([a-zA-Z0-9_]+(?::[a-zA-Z0-9_]+)?)\}\}")
@@ -47,6 +51,9 @@ def load_replacements(config_path: Path) -> dict[str, str]:
         raw_data.setdefault("github_repository", repo_name)
         raw_data.setdefault("github_url", f"{server_url}/{repo_slug}")
 
+    # 3. Dynamically generate C# usage snippets via readme.py
+    raw_data["usage"] = generate_usage(lock_path)
+
     replacements = {}
     for key, val in raw_data.items():
         if isinstance(val, (dict, list)):
@@ -64,10 +71,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Sync template files to repository root.")
     parser.add_argument("--template-dir", type=Path, default=Path(".template_tmp"))
     parser.add_argument("--config-file", type=Path, default=Path(".sdk-fabric.json"))
+    parser.add_argument("--lock-file", type=Path, default=Path("sdkgen.lock"))
     args = parser.parse_args()
 
     template_dir: Path = args.template_dir
     config_file: Path = args.config_file
+    lock_file: Path = args.lock_file
 
     # 1. Validation
     if not config_file.is_file():
@@ -79,10 +88,10 @@ def main() -> None:
         sys.exit(1)
 
     # 2. Load placeholders
-    replacements = load_replacements(config_file)
+    replacements = load_replacements(config_file, lock_file)
 
     # 3. Process template files using pathlib
-    ignored_parts = {".git", ".sdk-fabric.json", "sync.py"}
+    ignored_parts = {".git", ".sdk-fabric.json", "sync.py", "readme.py"}
     missing_placeholders_found = False
 
     for src_file in template_dir.rglob("*"):
