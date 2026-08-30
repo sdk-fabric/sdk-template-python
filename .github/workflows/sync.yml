@@ -1,6 +1,13 @@
 name: Template-Sync
 on:
   workflow_dispatch:
+    inputs:
+      typehub_user:
+        description: 'TypeHub User'
+        required: true
+      typehub_document:
+        description: 'TypeHub Document'
+        required: true
 permissions:
   contents: write
 jobs:
