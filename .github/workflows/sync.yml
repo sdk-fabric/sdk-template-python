@@ -14,6 +14,8 @@ jobs:
   sync-template:
     runs-on: ubuntu-latest
     steps:
-      - uses: sdk-fabric/sync-action@v0.1.1
+      - uses: sdk-fabric/sync-action@v0.2.0
         with:
           lang: 'python'
+          typehub_user: ${{ inputs.typehub_user }}
+          typehub_document: ${{ inputs.typehub_document }}
