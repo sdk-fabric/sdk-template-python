@@ -7,19 +7,24 @@ import re
 from pathlib import Path
 
 
-def to_snake_case(name: str) -> str:
-    if not name:
-        return ""
-    s = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", name)
-    return re.sub(r"[._\-\s]+", "_", s).lower().strip("_")
+def to_camel_case(name: str) -> str:
+    """Returns camelCase string as-is (e.g. deleteRow -> deleteRow)."""
+    return name
 
 
 def to_pascal_case(name: str) -> str:
+    """Converts the first character to uppercase (ucfirst) (e.g. deleteRow -> DeleteRow)."""
+    if not name:
+        return ""
+    return name[0].upper() + name[1:]
+
+
+def to_snake_case(name: str) -> str:
+    """Converts camelCase/PascalCase to snake_case (e.g. deleteRow -> delete_row)."""
     if not name:
         return ""
     s = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", name)
-    parts = [p for p in re.split(r"[._-]+", s) if p]
-    return "".join(p.capitalize() for p in parts)
+    return s.lower().strip("_")
 
 
 def map_schema_to_type(schema: dict) -> str:
