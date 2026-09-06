@@ -74,9 +74,11 @@ def generate_usage(lock_file_path: Path) -> str:
     lines = []
 
     for op_id, op in operations.items():
-        if "." in op_id:
-            tag, method_raw = op_id.split(".", 1)
-            tag_accessor = f"client.{to_snake_case(tag)}()"
+        parts = op_id.split(".")
+        if len(parts) > 1:
+            tag_chain = ".".join(f"{to_snake_case(p)}()" for p in parts[:-1])
+            tag_accessor = f"client.{tag_chain}"
+            method_raw = parts[-1]
         else:
             method_raw = op_id
             tag_accessor = "client"
