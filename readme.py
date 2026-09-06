@@ -8,26 +8,21 @@ from pathlib import Path
 
 
 def to_snake_case(name: str) -> str:
-    """Convert camelCase, PascalCase, dot.case, or hyphenated names to snake_case."""
     if not name:
         return ""
-    # Insert underscore between lower/digit and upper case (e.g. getAll -> get_All)
-    s1 = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", name)
-    # Replace dots, hyphens, spaces, or consecutive underscores
-    s2 = re.sub(r"[._\-\s]+", "_", s1)
-    return s2.lower().strip("_")
+    s = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", name)
+    return re.sub(r"[._\-\s]+", "_", s).lower().strip("_")
 
 
 def to_pascal_case(name: str) -> str:
-    """Convert snake_case, camelCase, dot.case, or hyphenated names to PascalCase."""
     if not name:
         return ""
-    parts = re.split(r"[._-]+", name)
-    return "".join(p.capitalize() for p in parts if p)
+    s = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", name)
+    parts = [p for p in re.split(r"[._-]+", s) if p]
+    return "".join(p.capitalize() for p in parts)
 
 
 def map_schema_to_type(schema: dict) -> str:
-    """Map a TypeAPI schema definition to its corresponding Python type or class name."""
     if not schema or not isinstance(schema, dict):
         return "Any"
 
@@ -56,7 +51,6 @@ def map_schema_to_type(schema: dict) -> str:
 
 
 def generate_usage(lock_file_path: Path) -> str:
-    """Read sdkgen.lock TypeAPI spec and generate clean Python operation snippets."""
     if not lock_file_path.is_file():
         return "# No sdkgen.lock found to generate usage examples."
 
@@ -87,7 +81,6 @@ def generate_usage(lock_file_path: Path) -> str:
         raw_arguments = op.get("arguments", {})
         call_args = []
 
-        # Normalize arguments format whether it's a list or a dict
         arguments_list = []
         if isinstance(raw_arguments, list):
             arguments_list = raw_arguments
