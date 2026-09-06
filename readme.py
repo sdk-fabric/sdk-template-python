@@ -79,10 +79,10 @@ def generate_usage(lock_file_path: Path) -> str:
             tag_accessor = f"client.{tag_chain}"
             method_raw = parts[-1]
         else:
-            method_raw = op_id
+            method_raw = to_snake_case(op_id)
             tag_accessor = "client"
 
-        method_name = to_snake_case(method_raw)
+        method_name = method_raw
         raw_arguments = op.get("arguments", {})
         call_args = []
 
