@@ -12,7 +12,8 @@ on:
         description: "The TypeHub changelog on tag"
         required: false
 permissions:
-  contents: 'write'
+  id-token: write
+  contents: write
 jobs:
   generate:
     runs-on: ubuntu-latest
@@ -25,48 +26,14 @@ jobs:
           typehub_message: '${{ inputs.typehub_message }}'
           typehub_version: '${{ inputs.typehub_version }}'
           typehub_changelog: '${{ inputs.typehub_changelog }}'
-  build:
-    name: Build distribution
+  publish:
     if: "${{ inputs.typehub_version != '' }}"
     needs: generate
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.x"
-      - name: Set version
-        run: sed -i 's/0.1.0/${{ inputs.typehub_version }}/g' ./pyproject.toml
-      - name: Install pypa/build
-        run: >-
-          python3 -m
-          pip install
-          build
-          --user
-      - name: Build a binary wheel and a source tarball
-        run: python3 -m build
-      - name: Store the distribution packages
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-package-distributions
-          path: dist/
-  publish-to-pypi:
-    name: Publish to PyPI
-    if: "${{ inputs.typehub_version != '' }}"
-    needs: build
     runs-on: ubuntu-latest
     environment:
       name: pypi
       url: https://pypi.org/p/{{name}}
-    permissions:
-      # IMPORTANT: this permission is mandatory for Trusted Publishing
-      id-token: write
     steps:
-      - name: Download all the dists
-        uses: actions/download-artifact@v4
+      - uses: sdk-fabric/python-publish-action@v0.1.0
         with:
-          name: python-package-distributions
-          path: dist/
-      - name: Publish distribution to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+          typehub_version: '${{ inputs.typehub_version }}'
